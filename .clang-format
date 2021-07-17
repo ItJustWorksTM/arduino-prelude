@@ -1,0 +1,45 @@
+---
+# We'll use defaults from the LLVM style, but with 4 columns indentation.
+BasedOnStyle: LLVM
+IndentWidth: 4
+---
+Language: Cpp
+# Force pointers to the type for C++.
+DerivePointerAlignment: false
+PointerAlignment: Left
+ColumnLimit: 120
+IndentPPDirectives: AfterHash
+BreakBeforeBraces: Custom
+AlwaysBreakTemplateDeclarations: Yes
+BraceWrapping:
+  AfterCaseLabel: false
+  AfterClass: false
+  AfterControlStatement: Never
+  AfterEnum: false
+  AfterExternBlock: false
+  AfterStruct: false
+  AfterNamespace: false
+  AfterUnion: false
+  BeforeCatch: false
+  BeforeElse: false
+  BeforeLambdaBody: false
+  BeforeWhile: false
+  IndentBraces: false
+  SplitEmptyFunction: false
+  SplitEmptyRecord: false
+  SplitEmptyNamespace: false
+AllowShortEnumsOnASingleLine: false
+IncludeCategories:
+  - Regex:           '<[[:alnum:]_]+>'
+    Priority:        -6
+  - Regex:           '<[[:alnum:]._\/]+>'
+    Priority:        -5
+  - Regex:           '<[[:alnum:]._]+>'
+    Priority:        -4
+  - Regex:           '<[[:alnum:].\/]+>'
+    Priority:        -3
+  - Regex:           '"[[:alnum:]._]+"'
+    Priority:        -1
+  - Regex:           '.*'
+    Priority:        -2
+...
