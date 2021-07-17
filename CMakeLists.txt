@@ -57,3 +57,9 @@ else ()
   target_link_directories (ardpp PRIVATE ${LLVM_LIBRARY_DIRS})
   target_link_libraries (ardpp PUBLIC ${LLVM_LIBS} clang)
 endif ()
+
+install (TARGETS ardpp
+    RUNTIME DESTINATION .
+)
+
+include (CPack)
