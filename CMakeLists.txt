@@ -26,7 +26,7 @@ target_sources (ardpp PRIVATE ardpp.cpp)
 
 if (NOT MSVC)
   target_compile_options (ardpp PRIVATE "-Wall" "-Wextra" "-Wpedantic" "-Werror" "-Wcast-align")
-  if ("${SMCE_CXXRT_LINKING}" STREQUAL "STATIC" AND "${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+  if ("${ARDPP_CXXRT_LINKING}" STREQUAL "STATIC" AND "${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     target_link_options (ardpp PRIVATE -static-libstdc++ -static-libgcc)
     #FIXME handle Clang/libc++
   endif ()
