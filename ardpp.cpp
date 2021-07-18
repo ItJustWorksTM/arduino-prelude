@@ -20,6 +20,7 @@
 #include <cstdlib>
 #include <iostream>
 #include <optional>
+#include <sstream>
 #include <string>
 #include <unordered_map>
 #include <clang-c/CXString.h>
@@ -41,31 +42,6 @@ int main(int argc, char** argv) {
         std::cerr << "error: unable to parse translation unit." << std::endl;
         return EXIT_FAILURE;
     }
-
-#if USE_DIAGNOSTICS
-    bool has_error = false;
-    ::CXDiagnosticSet diags = ::clang_getDiagnosticSetFromTU(unit);
-    const unsigned diags_count = ::clang_getNumDiagnosticsInSet(diags);
-    for (unsigned i = 0; i < diags_count; ++i) {
-        auto diag = ::clang_getDiagnosticInSet(diags, i);
-        const auto severity = clang_getDiagnosticSeverity(diag);
-        if (severity >= ::CXDiagnostic_Error) {
-            has_error = true;
-            auto diag_fmt = ::clang_formatDiagnostic(diag, ::clang_defaultDiagnosticDisplayOptions());
-            std::cerr << ::clang_getCString(diag_fmt) << std::endl;
-            ::clang_disposeString(diag_fmt);
-        }
-
-        ::clang_disposeDiagnostic(diag);
-    }
-    ::clang_disposeDiagnosticSet(diags);
-
-    if (has_error) {
-        ::clang_disposeTranslationUnit(unit);
-        ::clang_disposeIndex(index);
-        return EXIT_FAILURE;
-    }
-#endif
 
     struct {
         std::unordered_map<std::string, std::optional<std::string>> elements;
@@ -90,10 +66,12 @@ int main(int argc, char** argv) {
                     CXString filename;
                     unsigned line;
                     ::clang_getPresumedLocation(curr_state.curr_sloc, &filename, &line, nullptr);
-                    curr_state.elements.emplace(std::move(curr_state.curr_decl),
-                                                std::to_string(line) + " \"" + clang_getCString(filename) + '\"');
+                    std::stringstream ss;
+                    ss << line << " \"" << ::clang_getCString(filename) << '\"';
+                    curr_state.elements.emplace(std::move(curr_state.curr_decl), std::move(ss).str());
                     curr_state.curr_sloc = ::clang_getNullLocation();
                     clang_disposeString(filename);
+                    curr_state.curr_decl = {};
                     return ::CXChildVisit_Continue;
                 }
                 case ::CXCursor_ParmDecl:
@@ -104,6 +82,7 @@ int main(int argc, char** argv) {
                 default:
                     if (clang_isDeclaration(kind)) {
                         curr_state.elements.insert_or_assign(std::move(curr_state.curr_decl), std::nullopt);
+                        curr_state.curr_decl = {};
                         curr_state.curr_sloc = ::clang_getNullLocation();
                     }
                 }
@@ -140,7 +119,7 @@ int main(int argc, char** argv) {
     std::cout << "#include <Arduino.h>\n#line 1 \"" << argv[1] << "\"\n";
 
     for (const auto& [decl, def_location] : state.elements) {
-        if (def_location->empty())
+        if (!def_location.has_value())
             continue;
         std::cout << "#line " << *def_location << '\n' << decl << ";\n";
     }
