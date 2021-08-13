@@ -49,3 +49,46 @@ jobs:
         with:
           name: ardpre-linux
           path: dist/*.tar.gz
+  build-macos:
+    name: arduino-prelude - macOS
+    runs-on: macos-latest
+    env:
+      CC: clang-12
+      CXX: clang++-12
+    steps:
+      - name: Get toolchain
+        run: |
+          brew install llvm@12 ninja zlib
+      - name: Cache LLVM
+        id: cache-llvm
+        uses: actions/cache@v2
+        with:
+          path: ~/llvm_static
+          key: macos-llvm12.0
+      - name: Install LLVM
+        if: steps.cache-llvm.outputs.cache-hit != 'true'
+        run: |
+          export CC="$(brew --prefix llvm)/bin/clang -stdlib=libc++ -nostdinc++ -I$(brew --prefix)/opt/llvm/include/c++/v1"
+          export CXX="$(brew --prefix llvm)/bin/clang++ -stdlib=libc++ -nostdinc++ -I$(brew --prefix)/opt/llvm/include/c++/v1"
+          export LDFLAGS="-L$(brew --prefix)/opt/llvm/lib -Wl,-rpath,$(brew --prefix)/opt/llvm/lib"
+          git clone --depth 1 https://github.com/deech/libclang-static-build
+          cd libclang-static-build
+          cmake -DCMAKE_INSTALL_PREFIX=~/llvm_static -S . -B build
+          cmake --build ./build --target install
+          cd ..
+      - uses: actions/checkout@v2
+      - name: Configure
+        run: |
+          export CC="$(brew --prefix llvm)/bin/clang -stdlib=libc++ -nostdinc++ -I$(brew --prefix)/opt/llvm/include/c++/v1 -Wno-unused-command-line-argument"
+          export CXX="$(brew --prefix llvm)/bin/clang++ -stdlib=libc++ -nostdinc++ -I$(brew --prefix)/opt/llvm/include/c++/v1 -Wno-unused-command-line-argument"
+          export LDFLAGS="-L$(brew --prefix)/opt/llvm/lib -Wl,-rpath,$(brew --prefix)/opt/llvm/lib"
+          cmake -G Ninja -DARDPP_CXXRT_LINKING=STATIC -DSLIBCLANG_DIR=~/llvm_static -S . -B dist
+      - name: Build
+        run: cmake --build ./dist
+      - name: Package
+        run: (cd dist; cpack -G TGZ .)
+      - name: Upload artifacts
+        uses: 'actions/upload-artifact@v2'
+        with:
+          name: ardpre-macos
+          path: dist/*.tar.gz
