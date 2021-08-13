@@ -18,30 +18,31 @@
 cmake_minimum_required (VERSION 3.13.4)
 cmake_policy (SET CMP0022 NEW)
 
-project (ardpp VERSION 0.1.0)
+project (arduino-prelude VERSION 0.2.0)
 
-add_executable (ardpp)
-target_compile_features (ardpp PUBLIC cxx_std_17)
-target_sources (ardpp PRIVATE ardpp.cpp)
+add_executable (arduino-prelude)
+target_compile_features (arduino-prelude PUBLIC cxx_std_20)
+target_sources (arduino-prelude PRIVATE arduino-prelude.cpp)
+target_compile_definitions (arduino-prelude PRIVATE "ARDUINO_PRELUDE_VERSION=\"${PROJECT_VERSION}\"")
 
 if (NOT MSVC)
-  target_compile_options (ardpp PRIVATE "-Wall" "-Wextra" "-Wpedantic" "-Werror" "-Wcast-align")
-  if ("${ARDPP_CXXRT_LINKING}" STREQUAL "STATIC" AND "${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-    target_link_options (ardpp PRIVATE -static-libstdc++ -static-libgcc)
+  target_compile_options (arduino-prelude PRIVATE "-Wall" "-Wextra" "-Wpedantic" "-Werror" "-Wcast-align")
+  if ("${arduino-prelude_CXXRT_LINKING}" STREQUAL "STATIC" AND "${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+    target_link_options (arduino-prelude PRIVATE -static-libstdc++ -static-libgcc)
     #FIXME handle Clang/libc++
   endif ()
 else ()
-  target_compile_options (ardpp PRIVATE "/W4" "/permissive-" "/wd4244" "/wd4459" "/WX")
+  target_compile_options (arduino-prelude PRIVATE "/W4" "/permissive-" "/wd4244" "/wd4459" "/WX")
 endif ()
 
 if (DEFINED SLIBCLANG_DIR)
   find_package (Threads REQUIRED)
-  target_include_directories (ardpp PRIVATE "${SLIBCLANG_DIR}/include")
-  target_link_directories (ardpp PRIVATE "${SLIBCLANG_DIR}/lib")
-  target_link_libraries (ardpp PUBLIC clang_bundled dl z Threads::Threads)
+  target_include_directories (arduino-prelude PRIVATE "${SLIBCLANG_DIR}/include")
+  target_link_directories (arduino-prelude PRIVATE "${SLIBCLANG_DIR}/lib")
+  target_link_libraries (arduino-prelude PUBLIC clang_bundled dl z Threads::Threads)
   if (NOT MSVC)
-    target_link_options (ardpp PUBLIC -s -Wl,--gc-sections)
-    target_compile_options (ardpp PUBLIC -Os -ffunction-sections -fdata-sections)
+    target_link_options (arduino-prelude PUBLIC -s -Wl,--gc-sections)
+    target_compile_options (arduino-prelude PUBLIC -Os -ffunction-sections -fdata-sections)
   endif ()
 else ()
   find_package (LLVM 12 REQUIRED CONFIG)
@@ -51,14 +52,14 @@ else ()
   separate_arguments (LLVM_DEFINITIONS_LIST NATIVE_COMMAND ${LLVM_DEFINITIONS})
   llvm_map_components_to_libnames (LLVM_LIBS support core)
 
-  target_compile_definitions (ardpp PRIVATE ${LLVM_DEFINITIONS_LIST})
-  target_include_directories (ardpp PRIVATE ${LLVM_INCLUDE_DIRS})
+  target_compile_definitions (arduino-prelude PRIVATE ${LLVM_DEFINITIONS_LIST})
+  target_include_directories (arduino-prelude PRIVATE ${LLVM_INCLUDE_DIRS})
 
-  target_link_directories (ardpp PRIVATE ${LLVM_LIBRARY_DIRS})
-  target_link_libraries (ardpp PUBLIC ${LLVM_LIBS} clang)
+  target_link_directories (arduino-prelude PRIVATE ${LLVM_LIBRARY_DIRS})
+  target_link_libraries (arduino-prelude PUBLIC ${LLVM_LIBS} clang)
 endif ()
 
-install (TARGETS ardpp
+install (TARGETS arduino-prelude
     RUNTIME DESTINATION .
 )
 

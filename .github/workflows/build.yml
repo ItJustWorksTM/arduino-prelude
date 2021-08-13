@@ -2,7 +2,7 @@ name: Build
 on: [push, pull_request]
 jobs:
   build-linux:
-    name: ardpp - Linux
+    name: arduino-prelude - Linux
     runs-on: ubuntu-latest
     container: ubuntu:bionic
     env:
@@ -47,5 +47,5 @@ jobs:
       - name: Upload artifacts
         uses: 'actions/upload-artifact@v2'
         with:
-          name: ardpp-linux
+          name: ardpre-linux
           path: dist/*.tar.gz
