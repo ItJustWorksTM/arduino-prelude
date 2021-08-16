@@ -113,7 +113,7 @@ jobs:
           cd ..
       - uses: actions/checkout@v2
       - name: Configure
-        run: cmake -DSLIBCLANG_DIR=C:\llvm_static -S . -B dist
+        run: cmake -DSLIBCLANG_DIR=C:\llvm_static -DARDPRE_CXXRT_LINKING=STATIC -S . -B dist
       - name: Build
         run: cmake --build ./dist --config Release
       - name: Package

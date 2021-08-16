@@ -17,6 +17,7 @@
 
 cmake_minimum_required (VERSION 3.13.4)
 cmake_policy (SET CMP0022 NEW)
+cmake_policy (SET CMP0091 NEW)
 
 project (arduino-prelude VERSION 0.2.0)
 
@@ -33,6 +34,9 @@ if (NOT MSVC)
   endif ()
 else ()
   target_compile_options (arduino-prelude PRIVATE "/W4" "/permissive-" "/wd4244" "/wd4459" "/WX")
+  if ("${ARDPRE_CXXRT_LINKING}" STREQUAL "STATIC")
+    set_property (TARGET arduino-prelude PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+  endif ()
 endif ()
 
 if (DEFINED SLIBCLANG_DIR)
@@ -41,7 +45,8 @@ if (DEFINED SLIBCLANG_DIR)
   target_link_directories (arduino-prelude PRIVATE "${SLIBCLANG_DIR}/lib")
   target_link_libraries (arduino-prelude PUBLIC Threads::Threads)
   if (WIN32)
-    target_link_libraries(arduino-prelude PUBLIC clang_static_bundled)
+    target_compile_definitions (arduino-prelude PUBLIC _CINDEX_LIB_)
+    target_link_libraries (arduino-prelude PUBLIC clang_static_bundled)
   else ()
     target_link_libraries (arduino-prelude PUBLIC clang_bundled dl z)
   endif ()
