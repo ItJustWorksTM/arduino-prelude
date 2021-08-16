@@ -97,7 +97,14 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: ilammy/msvc-dev-cmd@v1
+      - name: Cache LLVM
+        id: cache-llvm
+        uses: actions/cache@v2
+        with:
+          path: C:\llvm_static
+          key: windows-llvm12.0
       - name: Install LLVM
+        if: steps.cache-llvm.outputs.cache-hit != 'true'
         run: |
           git clone --depth 1 https://github.com/deech/libclang-static-build
           cd libclang-static-build
