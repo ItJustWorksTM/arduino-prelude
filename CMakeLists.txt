@@ -27,7 +27,7 @@ target_compile_definitions (arduino-prelude PRIVATE "ARDUINO_PRELUDE_VERSION=\"$
 
 if (NOT MSVC)
   target_compile_options (arduino-prelude PRIVATE "-Wall" "-Wextra" "-Wpedantic" "-Werror" "-Wcast-align")
-  if ("${arduino-prelude_CXXRT_LINKING}" STREQUAL "STATIC" AND "${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+  if ("${ARDPRE_CXXRT_LINKING}" STREQUAL "STATIC" AND "${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     target_link_options (arduino-prelude PRIVATE -static-libstdc++ -static-libgcc)
     #FIXME handle Clang/libc++
   endif ()

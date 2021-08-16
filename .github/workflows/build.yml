@@ -39,7 +39,7 @@ jobs:
           cd ..
       - uses: actions/checkout@v2
       - name: Configure
-        run: cmake -G Ninja -DARDPP_CXXRT_LINKING=STATIC -DSLIBCLANG_DIR=/opt/llvm_static -S . -B dist
+        run: cmake -G Ninja -DARDPRE_CXXRT_LINKING=STATIC -DSLIBCLANG_DIR=/opt/llvm_static -S . -B dist
       - name: Build
         run: cmake --build ./dist
       - name: Package
@@ -82,7 +82,7 @@ jobs:
           export CC="$(brew --prefix llvm)/bin/clang -stdlib=libc++ -nostdinc++ -I$(brew --prefix)/opt/llvm/include/c++/v1 -Wno-unused-command-line-argument"
           export CXX="$(brew --prefix llvm)/bin/clang++ -stdlib=libc++ -nostdinc++ -I$(brew --prefix)/opt/llvm/include/c++/v1 -Wno-unused-command-line-argument"
           export LDFLAGS="-L$(brew --prefix)/opt/llvm/lib -Wl,-rpath,$(brew --prefix)/opt/llvm/lib"
-          cmake -G Ninja -DARDPP_CXXRT_LINKING=STATIC -DSLIBCLANG_DIR=~/llvm_static -S . -B dist
+          cmake -G Ninja -DARDPRE_CXXRT_LINKING=STATIC -DSLIBCLANG_DIR=~/llvm_static -S . -B dist
       - name: Build
         run: cmake --build ./dist
       - name: Package
@@ -92,3 +92,29 @@ jobs:
         with:
           name: ardpre-macos
           path: dist/*.tar.gz
+  build-windows:
+    name: arduino-prelude - Windows
+    runs-on: windows-latest
+    steps:
+      - uses: ilammy/msvc-dev-cmd@v1
+      - name: Install LLVM
+        run: |
+          git clone --depth 1 https://github.com/deech/libclang-static-build
+          cd libclang-static-build
+          cmake -DCMAKE_INSTALL_PREFIX=C:\llvm_static -DLLVM_USE_CRT_RELEASE=MT -S . -B build
+          cmake --build ./build --target install --config Release
+          cd ..
+      - uses: actions/checkout@v2
+      - name: Configure
+        run: cmake -DSLIBCLANG_DIR=C:\llvm_static -S . -B dist
+      - name: Build
+        run: cmake --build ./dist --config Release
+      - name: Package
+        run: |
+          cd dist
+          cpack -G ZIP .
+      - name: Upload artifacts
+        uses: 'actions/upload-artifact@v2'
+        with:
+          name: ardpre-windows
+          path: dist/*.zip
