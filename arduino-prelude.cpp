@@ -99,7 +99,7 @@ int main(int argc, char** argv) {
 
     std::string composite_contents;
     const std::size_t filepaths_total_len =
-        std::accumulate(state.files.begin(), state.files.end(), 0,
+        std::accumulate(state.files.begin(), state.files.end(), std::size_t{},
                         [](std::size_t acc, const std::string& e) { return acc + e.length(); });
     composite_contents.reserve(state.files.size() * sizeof("#include \"\"") + filepaths_total_len);
     for (const auto& fpath : state.files) {
@@ -108,7 +108,8 @@ int main(int argc, char** argv) {
         composite_contents += "\"\n";
     }
 
-    ::CXUnsavedFile composite{composite_name, composite_contents.c_str(), composite_contents.size()};
+    ::CXUnsavedFile composite{composite_name, composite_contents.c_str(),
+                              static_cast<unsigned>(composite_contents.size())};
     auto unit = ::clang_parseTranslationUnit(index, composite_name, argv + 2, argc - 2, &composite, 1,
                                              ::CXTranslationUnit_Incomplete);
     if (unit == nullptr) {
@@ -194,6 +195,9 @@ int main(int argc, char** argv) {
         std::cout << "#line " << *def_location << '\n' << decl << ";\n";
     }
 
+#ifdef _MSC_VER
+#    pragma warning(disable : 4996)
+#endif
     if (std::getenv("ARDUINO_PRELUDE_DUMP_COMPOSITE"))
         std::cout << "#line 1 \"<arduino source>\"\n" << composite_contents;
 }
