@@ -1,6 +1,8 @@
 # `arduino-prelude`
 _SMCE's replacement for Arduino's ctags-based preprocessor_
 
+![Build](https://github.com/ItJustWorksTM/arduino-prelude/workflows/Build/badge.svg?branch=master)
+
 ## Usage
 
 Invoking
