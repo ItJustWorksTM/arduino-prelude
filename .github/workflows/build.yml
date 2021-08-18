@@ -32,7 +32,7 @@ jobs:
     container: ubuntu:bionic
     env:
       DEBIAN_FRONTEND: "noninteractive"
-      CMAKE_VERSION: 3.21.0
+      CMAKE_VERSION: 3.21.1
       CC: gcc-11
       CXX: g++-11
     steps:
