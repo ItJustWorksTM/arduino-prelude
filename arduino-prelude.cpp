@@ -117,6 +117,19 @@ int main(int argc, char** argv) {
         return EXIT_FAILURE;
     }
 
+    {
+        const auto num_diag = ::clang_getNumDiagnostics(unit);
+        for (unsigned i = 0; i < num_diag; ++i) {
+            struct UniqueDiagnostic {
+                ::CXDiagnostic m;
+                ~UniqueDiagnostic() { ::clang_disposeDiagnostic(m); }
+            } diag{::clang_getDiagnostic(unit, i)};
+
+            if (::clang_getDiagnosticSeverity(diag.m) == ::CXDiagnostic_Fatal)
+                return EXIT_FAILURE;
+        }
+    }
+
     auto cursor = ::clang_getTranslationUnitCursor(unit);
 
     state.ppp = ::clang_getCursorPrintingPolicy(cursor);
