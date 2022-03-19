@@ -29,10 +29,10 @@ jobs:
   build-linux:
     name: arduino-prelude - Linux
     runs-on: ubuntu-latest
-    container: ubuntu:bionic
+    container: ubuntu:focal
     env:
       DEBIAN_FRONTEND: "noninteractive"
-      CMAKE_VERSION: 3.21.1
+      CMAKE_VERSION: 3.22.3
       CC: gcc-11
       CXX: g++-11
     steps:
@@ -52,7 +52,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: /opt/llvm_static
-          key: ubuntu_bionic-llvm12.0
+          key: ubuntu_focal-llvm13.0
       - name: Install LLVM
         if: steps.cache-llvm.outputs.cache-hit != 'true'
         run: |
@@ -78,18 +78,18 @@ jobs:
     name: arduino-prelude - macOS
     runs-on: macos-latest
     env:
-      CC: clang-12
-      CXX: clang++-12
+      CC: clang-13
+      CXX: clang++-13
     steps:
       - name: Get toolchain
         run: |
-          brew install llvm@12 ninja zlib
+          brew install llvm@13 ninja zlib
       - name: Cache LLVM
         id: cache-llvm
         uses: actions/cache@v2
         with:
           path: ~/llvm_static
-          key: macos-llvm12.0
+          key: macos-llvm13.0
       - name: Install LLVM
         if: steps.cache-llvm.outputs.cache-hit != 'true'
         run: |
@@ -127,7 +127,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: C:\llvm_static
-          key: windows-llvm12.0
+          key: windows-llvm13.0
       - name: Install LLVM
         if: steps.cache-llvm.outputs.cache-hit != 'true'
         run: |

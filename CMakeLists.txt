@@ -60,7 +60,7 @@ if (DEFINED SLIBCLANG_DIR)
     target_compile_options (arduino-prelude PUBLIC -Os -ffunction-sections -fdata-sections)
   endif ()
 else ()
-  find_package (LLVM 12 REQUIRED CONFIG)
+  find_package (LLVM 13 REQUIRED CONFIG)
   message (STATUS "Found LLVM ${LLVM_PACKAGE_VERSION}")
   message (STATUS "Using LLVMConfig.cmake in: ${LLVM_DIR} (${LLVM_INCLUDE_DIRS})")
 
