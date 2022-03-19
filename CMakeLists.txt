@@ -19,7 +19,7 @@ cmake_minimum_required (VERSION 3.13.4)
 cmake_policy (SET CMP0022 NEW)
 cmake_policy (SET CMP0091 NEW)
 
-project (arduino-prelude VERSION 1.0.1)
+project (arduino-prelude VERSION 1.0.22)
 
 add_executable (arduino-prelude)
 target_compile_features (arduino-prelude PUBLIC cxx_std_20)
