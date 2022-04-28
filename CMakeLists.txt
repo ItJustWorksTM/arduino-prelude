@@ -19,6 +19,7 @@ cmake_minimum_required (VERSION 3.13.4)
 cmake_policy (SET CMP0022 NEW)
 cmake_policy (SET CMP0091 NEW)
 
+list (APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/CMake/Modules")
 project (arduino-prelude VERSION 1.0.22)
 
 add_executable (arduino-prelude)
@@ -59,6 +60,9 @@ if (DEFINED SLIBCLANG_DIR)
     endif ()
     target_compile_options (arduino-prelude PUBLIC -Os -ffunction-sections -fdata-sections)
   endif ()
+elseif (LIBCLANG_SYS)
+  find_package (Clang REQUIRED)
+  target_link_libraries (arduino-prelude PRIVATE libclang)
 else ()
   find_package (LLVM 13 REQUIRED CONFIG)
   message (STATUS "Found LLVM ${LLVM_PACKAGE_VERSION}")
@@ -74,8 +78,12 @@ else ()
   target_link_libraries (arduino-prelude PUBLIC ${LLVM_LIBS} clang)
 endif ()
 
-install (TARGETS arduino-prelude
-    RUNTIME DESTINATION .
-)
+install (TARGETS arduino-prelude RUNTIME)
 
+if (NOT DEFINED ARDPRE_CPACK_PROFILE)
+  set (ARDPRE_CPACK_PROFILE "Archive")
+endif ()
+
+include (CPackCommon)
+include ("${PROJECT_SOURCE_DIR}/CMake/PackagingProfiles/${ARDPRE_CPACK_PROFILE}.cmake")
 include (CPack)

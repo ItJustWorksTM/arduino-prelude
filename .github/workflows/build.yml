@@ -4,12 +4,12 @@ jobs:
   make-release:
     name: Publish release
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
-    needs: [ build-linux, build-macos, build-windows ]
+    needs: [ build-linux, build-macos, build-windows, package-alpine ]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Download all build artifacts
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
       - name: Create Release
         shell: bash
         run: |
@@ -62,7 +62,7 @@ jobs:
           cmake -DCMAKE_INSTALL_PREFIX=/opt/llvm_static -S . -B build
           cmake --build ./build --target install
           cd ..
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Configure
         run: cmake -G Ninja -DARDPRE_CXXRT_LINKING=STATIC -DSLIBCLANG_DIR=/opt/llvm_static -S . -B dist
       - name: Build
@@ -70,7 +70,7 @@ jobs:
       - name: Package
         run: (cd dist; cpack -G TGZ .)
       - name: Upload artifacts
-        uses: 'actions/upload-artifact@v2'
+        uses: actions/upload-artifact@v3
         with:
           name: ardpre-linux
           path: dist/*.tar.gz
@@ -101,7 +101,7 @@ jobs:
           cmake -DCMAKE_INSTALL_PREFIX=~/llvm_static -S . -B build
           cmake --build ./build --target install
           cd ..
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Configure
         run: |
           export CC="$(brew --prefix llvm)/bin/clang -stdlib=libc++ -nostdinc++ -I$(brew --prefix)/opt/llvm/include/c++/v1 -Wno-unused-command-line-argument"
@@ -113,7 +113,7 @@ jobs:
       - name: Package
         run: (cd dist; cpack -G TGZ .)
       - name: Upload artifacts
-        uses: 'actions/upload-artifact@v2'
+        uses: actions/upload-artifact@v3
         with:
           name: ardpre-macos
           path: dist/*.tar.gz
@@ -136,7 +136,7 @@ jobs:
           cmake -DCMAKE_INSTALL_PREFIX=C:\llvm_static -DLLVM_USE_CRT_RELEASE=MT -S . -B build
           cmake --build ./build --target install --config Release
           cd ..
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Configure
         run: cmake -DSLIBCLANG_DIR=C:\llvm_static -DARDPRE_CXXRT_LINKING=STATIC -S . -B dist
       - name: Build
@@ -146,7 +146,39 @@ jobs:
           cd dist
           cpack -G ZIP .
       - name: Upload artifacts
-        uses: 'actions/upload-artifact@v2'
+        uses: actions/upload-artifact@v3
         with:
           name: ardpre-windows
           path: dist/*.zip
+  package-alpine:
+    name: Package Alpine APK
+    runs-on: ubuntu-latest
+    container: alpine:latest
+    steps:
+      - name: Get deps
+        run: |
+          apk update
+          apk upgrade
+          apk add alpine-sdk atools git ninja cmake gcc g++ clang-dev clang-static llvm12-dev llvm12-static
+          echo '' | abuild-keygen -aq &> /dev/null
+      - uses: actions/checkout@v3
+      - name: Configure
+        run: |
+          cmake -G Ninja \
+                -DLIBCLANG_SYS=True \
+                -DARDPRE_CPACK_PROFILE=APKBUILD \
+                -DCMAKE_INSTALL_PREFIX=/usr \
+                -B dist
+      - name: Build
+        run: cmake --build ./dist
+      - name: Package
+        run: cmake --build ./dist --target package
+      - name: Lint APKBUILD
+        run: apkbuild-lint ./dist/APKBUILD || true
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: ardpre-alpine
+          path: |
+            dist/APKBUILD
+            dist/*.apk
