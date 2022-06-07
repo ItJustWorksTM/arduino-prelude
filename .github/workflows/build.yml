@@ -159,7 +159,7 @@ jobs:
         run: |
           apk update
           apk upgrade
-          apk add alpine-sdk atools git ninja cmake gcc g++ clang-dev clang-static llvm12-dev llvm12-static
+          apk add alpine-sdk atools git ninja cmake gcc g++ clang-dev clang-static llvm13-dev llvm13-static
           echo '' | abuild-keygen -aq &> /dev/null
       - uses: actions/checkout@v3
       - name: Configure
